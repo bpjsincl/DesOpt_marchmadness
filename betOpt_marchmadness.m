@@ -1,37 +1,44 @@
-% first, define the problem for two games
-p1 = (1 - 1/(1+16));	% seed 1 vs 16
-p2 = (2 - 2/(2+15));	% seed 2 vs 15
+% define all matchups in each round
+Round1Matchups = {[1 16], [2 15], [3 14], [4 13], [5 12], [6 11], [7 10], [8 9],
+                    [1 16], [2 15], [3 14], [4 13], [5 12], [6 11], [7 10], [8 9],
+                    [1 16], [2 15], [3 14], [4 13], [5 12], [6 11], [7 10], [8 9],
+                    [1 16], [2 15], [3 14], [4 13], [5 12], [6 11], [7 10], [8 9]};
 
-% set some x's?
-x = [0.5; 0.5;]
-x1 = x(1);
-x2 = x(2);
+Round2Matchups = {[1 9], [12 4], [11 3], [10 2], [1 8], [12 4], [6 3], [7 2],
+                    [1 8], [12 4], [6 3], [7 2], [1 8], [5 4], [11 14], [7 2]};
+                
+Round3Matchups = {[1 4], [11 10], [1 4], [3 7], [1 4], [6 2], [8 4], [11 2]};
 
-% calculate the return (r) for games 1 and 2
-r1 = (x1 / p1) - x1;
-r2 = (x2 / p2) - x2;
+Round4Matchups = {[1 11], [4 7], [1 2], [8 2]};
 
-R = [p1; p2;]
+Round5Matchups = {[2 8], [1 7]};
+
+Round6Matchups = {[7 8]};
+
+RoundMatchups = Round1Matchups;
+perAllocated = 1;
+
+% calculate probability of team winning for each game in current round (simple probability)
+Prob = [];
+for i=1:length(RoundMatchups)
+    p = 1 - RoundMatchups{i}(1)/(RoundMatchups{i}(1)+RoundMatchups{i}(2));
+    Prob = [Prob p];
+end
 
 % define the budget for a round
-b = 1; % here the budget is the same for every round, and normalized to 1
+budget = perAllocated*1; % here the budget is the same for every round, and normalized to 1
 
 % scales the variance (risk) in the objective function
 theta = 0.5;
 
-% not sure about ol' mu...
-mu = 0.5;
-
-% should mu be indexed or is it one value for all games?
-variance = (x(1).^2) * (p1 * (r1 - mu)^2) + (x(2).^2) * (p2 * (r2 - mu)^2);
-
 % set initial conditions (first guess of what the division of budget might be)
-x0_fmin = [0.5 0.5];
+x0_fmin = budget*0.5*ones(1,length(RoundMatchups)); %initial guess of length of number of games played in current round
 
-A = [0 0];
-b = 0;
-Aeq = [1 1];
-beq = 1;
+A = [];
+b = [];
+Aeq = ones(1,length(RoundMatchups));
+beq = budget;
+LB = zeros(1,length(RoundMatchups)); UB = budget*ones(1,length(RoundMatchups));
 
 % fmincon is our solver for the minimization problem
-[x_fmincon,fval] = fmincon(@(x) obj_func(x,r1,r2,theta,variance),x0_fmin,A,b,Aeq,beq)
+[x_fmincon,fval] = fmincon(@(x) mean_var_func(x, theta, Prob),x0_fmin,A,b,Aeq,beq,LB,UB)

@@ -1,4 +1,15 @@
-function y = obj_func(x, r1, r2, theta, variance)
-    % The objective function to describe our problem
-    y = r1 * x(1) + r2 * x(2) - theta * sqrt(variance);
+function y = mean_var_func(x, theta, Prob)
+    R=[];
+    numGames = length(x);
+    for i = 1:numGames
+        ri = (x(i)/Prob(i))-x(i);
+        R = [R ri];
+    end
+    var_R=[];
+    for k =1:numGames
+        var_ri = (Prob(k)*(R(k)-R*x').^2);
+        var_R = [var_R var_ri];
+    end
+    
+    y = R*x' - theta*sqrt(x.^2*var_R');
 end
