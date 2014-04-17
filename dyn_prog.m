@@ -14,10 +14,10 @@ benefits(:,:,6) = [12 41 12 5 22; 23 22 15 12 1; 1 2 3 4 5; 2 7 4 6 5; 1 4 6 8 9
 % extend for more states and stages...
 
 opt_list = [];	% stores benefit at current state, and optimal decision location
-[state_benefit, opt_dsg] = max(benefits(:, :, num_stages))
-[row, col] = max(state_benefit)
+[state_benefit, opt_dsg] = max(benefits(:, :, num_stages));
+[row, col] = max(state_benefit);
 state_benefit = row;
-opt_dsg = opt_dsg(col)
+opt_dsg = opt_dsg(col);
 
 opt_list = [opt_list; state_benefit, opt_dsg];
 
