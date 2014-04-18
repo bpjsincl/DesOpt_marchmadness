@@ -31,6 +31,15 @@
 \section{Introduction}
 \setlength{\parindent}{1cm}
 \subsection{Background}
+This report details the design optimization of betting strategies for the NCAA Men's Division 1 Basketball Championship, commonly referred to as the ``March Madness'' tournament.
+This tournament is a yearly event comprising of the top 64 teams in US College Basketball \cite{doi:10.1080/00031305.1996.10473540}.
+It is structured in a classical tournament bracket format, beginning with 32 games (64 teams) and ending with 1 final championship game.
+The losing team from each game is eliminated from the tournament at each round.
+
+The attempt at predicting and/or betting on the games in this tournament is a common activity for many fans and followers of the sport.
+In order to provide more informed decisions, the design optimization of betting strategies under probabilistic uncertainty was conducted using a modern portfolio theory mean-variance approach, combined with dynamic programming.
+The formulation of each optimization algorithm is provided, as well as the results and analysis of the solution.
+Discussions on the results, sensitivity of the system, and conclusions are also provided. 
 
 \subsection{Problem Definition}
 
@@ -40,6 +49,52 @@
 \subsection{Mean-Variance Approach to Portfolio Optimization}
 
 \subsection{Dynamic Programming}
+The method of discrete dynamic programming was employed in this solution to take the values provided from the mean-variance approach to portfolio optimization, and select the best ``path'' through the tournament where bets should be placed to maximize return.
+The betting possibilities are discretized into 5 states, wherein one may utilize 100\%, 75\%, 50\%, 25\%, or 0\% of their budget on a round of the tournament.
+
+Using the discrete dynamic programming methodology outlined in class, the problem was divided into stages, with each stage representing a round of the tournament.This method depends on Bellman's principle of optimality, stated as follows:\begin{quote}
+\emph{``The optimal set of decisions in a multistage process has the property that whatever the initial stage, state and decisions are, the remaining decisions, given the current stage, must form a set of optimal decisions for the remaining problem.''}
+\end{quote}
+This gives rise to the recursive nature of the problem formulation.
+A breakdown of the variables used in the analysis, and their meaning, is provided in Table \ref{dp_vars}. \\
+
+\begin{table}[htbp!]
+\begin{centering}
+    \begin{tabular}{|l|l|}
+    \hline
+    Variable & Meaning           \\ \hline
+    $x_{t}$        & Decision Variable \\ \hline
+    $s_{t}$        & State Variable    \\ \hline
+    $t$        & Stage Number             \\ \hline
+    $f$        & Return            \\ \hline
+    $f*$       & Maximum Return    \\ \hline
+    \end{tabular}
+    \label{dp_vars}
+    \caption{Variables used in the Dynamic Programming formulation.}
+\end{centering}
+\end{table}
+
+A decision (the value of $x_{t}$) is required at each stage, where $t$ is the stage, and 1 $\le t \le$ 6.
+Each stage has a state variable, $s_{t}$, and this state is divided into five states, one for each allowed percentage of the total budget to be bet.
+At each stage (i.e. each round in the tournament), the dynamic programming system moves from the current state in the current stage to another ideal feasible state in the next stage.
+This discrete dynamic programming methodology is able to solve each stage problem individually by considering the return function for the current stage, and the optimal function, $f*$, from the next stage ($t + 1$) to the end of the horizon (6 rounds).
+In order to accomplish this, a recursive equation was constructed, as shown in Equation \ref{dp_recursive}.
+
+\begin{equation}
+f_{t}(s_{t}(i)) = \max \ [r_{t}(x_{t},s_{t}(i)) + f^{*}_{t+1}(s_{t+1}(j))]
+\label{dp_recursive}
+\end{equation}
+
+This way, the system is able to determine optimal decisions for the problem overall, from any given state.
+The full list of decisions and their individual returns are available at the end of the procedure.
+
+Upon formulation of the problem, the dynamic programming portion of the system was then implemented in Matlab to generate solutions, given inputs from the prior mean-variance method.
+The full implementation is given in Appendix A.
+The data from the mean-variance solution was structured into a 5x5x6 3-dimensional matrix, where each row represents the returns of each state transition to the next stage.
+Each ``page'' of this matrix (i.e. along the 3rd dimension) represents the data for each stage, or round, of the tournament.
+With the data modelled appropriately, the optimal return (and its location) for the final round of the tournament was found and placed into a list holding each of the optimal decisions throughout the tournament.
+Then, each stage of the tournament was looped through in a backwards fashion, and the optimal path of bets through the tournament was generated recursively.
+The returns from each stage are then summed, to provide a look at the total optimal return for the tournament.
 
 \section{Results and Analysis}
 \subsection{Sample Inputs, Outputs, and Detailed Solution}
@@ -53,9 +108,35 @@
 \newpage
 \section{Conclusions}
 
+\newpage
+\section{References}
+\bibliographystyle{IEEEtran}
+\bibliography{bib}
 
 \newpage
 \section{Appendix A: Full Implementation}
+\subsection{Dynamic Programming}
+\begin{verbatim}
+clear;
+
+num_stages = 6;	% number of rounds in the tournament
+num_states = 5;	% number of possible bets at each round
+
+opt_list = [];	% stores optimal return and location of bet
+[state_benefit, opt_dsg] = max(benefits(:, :, num_stages));
+[row, col] = max(state_benefit);
+state_benefit = row;
+opt_dsg = opt_dsg(col);
+
+opt_list = [opt_list; state_benefit, opt_dsg];
+
+for curr_stage = (num_stages-1):-1:1
+	[state_benefit, opt_dsg] = max(benefits(:, opt_dsg, curr_stage));
+	opt_list = [opt_list; state_benefit, opt_dsg];
+end
+
+opt_list
+\end{verbatim}
 
 
 \end{document}
