@@ -35,10 +35,11 @@ rtn = 1;
 prevRndCount = 1;
 budgetRtns=[rtn];
 startRtns=[1 1 1 1 1];
-allRtns=[1 1 1 1 1]; %init as percents for as if Round 0 exists
+allRtns=[startRtns]; %init as percents for as if Round 0 exists
 for k=1:length(dpPercents)
     budgetAlloc={};
     RoundMatchups=[];
+    allRtns = [allRtns; startRtns];
     for l=1:length(Matchups)
         round = l;
 %         prevMaxRtn = budgetRtns(1); %return from previous round at 100%
@@ -55,10 +56,14 @@ for k=1:length(dpPercents)
 
             % define the budget for a round
             currPercent = percents(q);
-            prevRtn = allRtns(end,k);
-            prevPercent = dpPercents(k);
+            prevRtn = allRtns(end-1,k);
+            if round==1
+                prevPercent = 1;
+            else
+                prevPercent = dpPercents(k);
+            end
 %             prevMaxRtn = prevMaxRtn
-            budget = currPercent*prevRtn + (1-prevPercent)*prevRtn;
+            budget = currPercent*(currPercent*prevRtn + (1-prevPercent));%*prevRtn;
     %         budget = percents(q)*rtn; % here the budget is the same for every round, and normalized to 1
 
             % scales the variance (risk) in the objective function; take more risk as
@@ -95,4 +100,5 @@ for k=1:length(dpPercents)
     end
     allRtns = [allRtns; startRtns]; %add start to returns at end for next percentage allocation calculations
 end
+save('allRtns.mat','allRtns');
 allRtns
