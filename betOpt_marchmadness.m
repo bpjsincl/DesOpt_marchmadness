@@ -1,6 +1,16 @@
+% ---------------------------------------------------------------------
+% Brian Sinclair
+% 
+% Description:
+% The following builds an novel application of expanding on the myopic approach 
+% into a dynamic portfolio optimization problem where the budget for the following 
+% round is the return on investment from the previous round.
+% 
 % Notes:
 %  - Sensitive to initial guess 
-%  - simple probability calculation makes unrealistic because taking a risk isn't followed
+%  - simple probability calculation makes unrealistic because because risk
+%  is in difficult to weight
+% ---------------------------------------------------------------------
 
 % define all matchups in each round
 clear all; close all;
