@@ -6,9 +6,19 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{siunitx}
+
+\usepackage{color}
+
+\definecolor{mygreen}{rgb}{0,0.6,0}
+\definecolor{mygray}{rgb}{0.5,0.5,0.5}
+\definecolor{mymauve}{rgb}{0.58,0,0.82}
+
+\usepackage{float}
 \DeclareMathOperator*{\argmin}{\arg\!\min}
 \DeclareMathOperator*{\argmax}{\arg\!\max}
 \newcolumntype{P}[1]{>{\RaggedRight\hspace{0pt}}p{#1}}
+
+\renewcommand{\thesection}{\arabic{section}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%    Begin Document    %%%
@@ -67,40 +77,82 @@ The following section will aim to describe a novel application of expanding on t
 
 
 \subsubsection{Setup}
-Much of the general setup and background was already previously described. 
+Much of the general setup and background was already described. 
 As previously mentioned the objective is to use modern portfolio theory techniques to determine a maximum return on investment for an individual round basis.
 This is done using a mean-variance optimization approach described below.
 
-\begin{equation*}
+\begin{equation}
 \begin{aligned}
-& \underset{x}{\text{minimize}}
+& \underset{x}{\text{max}}
 & & f(x) =  E(R^Tx)-\theta\sqrt{var(R^Tx)}\\
 & \text{s.t.}
 & & \sum{x}=b\\
 &&& |x_i| \leq b, \; i = 1, \ldots, m.
 \end{aligned}
+\label{portOpt}
+\end{equation}
+where,
+
+\begin{table}[htbp!]
+\begin{centering}
+    \begin{tabular}{r l}
+    $x_i:$      & Quantity wagered on a single game \\ 
+    $R:$        & Vector of expected returns        \\ 
+    $b:$        & Budget for any one round       	\\ 
+    $m:$        & Total Number of games(assets)    	\\ 
+    $\theta$	& Risk weighting					\\
+    \end{tabular}
+    \label{mop_vars}
+    \caption{Variables used in the Mean-Variance Portfolio Optimization.}
+\end{centering}
+\end{table}
+An important variable is the risk weighting variable $\theta$.
+This signifies how important it is to account for risk in the optimization.
+A low value here tells the algorithm to take a lot of risk in the wager, because risk is not important.
+A high value will do the opposite and will make more conservative wagers between games in a round.
+
+\subsubsection*{Stochastic Variables}
+The objective is to maximize return while minimizing risk in the mean-variance approach, where return is the expected return based off of the stochastic return, and the risk is the variance.
+Calculations for each is shown below:
+
+\begin{equation}
+\mu = E(R^Tx)=\sum r_i x_i
+\end{equation}
+\begin{equation}
+var(R^Tx)=\sum x_i^2var(r_i)=\sum x_i^2(p_i(r_i-\mu)^2)
+\end{equation}
+
+\begin{equation*}
+r_i=\frac{1}{p_i}x_i
 \end{equation*}
 where,
 
 \begin{table}[htbp!]
 \begin{centering}
     \begin{tabular}{r l}
-    $x_i:$        & Quantity wagered on a single game \\ 
-    $R:$        & Vector of expected returns             \\ 
-    $b:$        & Budget for any one round            \\ 
-    $m:$        & Total Number of games(assets)    \\ 
+    $r_i:$      & Expected return for one game \\ 
+    $p_i:$      & Probability of team A or B winning the game \\ 
     \end{tabular}
-    \label{dp_vars}
-    \caption{Variables used in the Dynamic Programming formulation.}
+    \label{op_vars}
+    \caption{Stochastic Variables}
 \end{centering}
 \end{table}
 
-Probabilities -- and how they are calculated
+To calculate the probability of each team winning a single game in a given round, a simple model is used.
+The model uses the ordinal rankings given to each team by the NCAA committee and is calculated as follows with two teams A and B, in a given match-up.
+\begin{equation}
+p_A = 1 - \frac{rank A}{rank A + rank B}
+\end{equation}
+This method can be used with a reasonable confidence from the assumption that the NCAA committee uses a statistical method called the Ranking Percentage Index (RPI) to calculate their ordinal rankings.
+RPI is a metric calculated from the weighted sum of three statistics: winning percentage, opponents' winning percentage, and opponents' opponents' winning percentage. 
+This is the current standard for ranking teams 1 through 16 for each region (four regions: East, West, South, MidWest), creating the 64 teams that make-up the tournament.
 
 \subsubsection{Assumptions}
+One important assumption previously mentioned is that the rankings give a realistic probability of outcome.
+However, this is very basic and more advanced statistical models would provide more accurate expected returns from any match-up.
+Improvements to statistical modelling are described in conclusions and recommendations.
 
-
-Uniform Distribution
+Additionally, in order to calculate the expected return the assumption of uniformity in distribution must be made for the stochastic variables.
 
 \subsection{Dynamic Programming}
 The method of discrete dynamic programming was employed in this solution to take the values provided from the mean-variance approach to portfolio optimization, and select the best ``path'' through the tournament where bets should be placed to maximize return.
@@ -167,17 +219,53 @@ One solution to an intelligent system would be to implement an artificial neural
 The team is working on this out of interest but it is not discussed further in this report.
 
 \section{Results and Analysis}
-\subsection{Sample Inputs, Outputs, and Detailed Solution}
+\subsection{Modern Portfolio Optimization}
+With a starting budget of "1" in \eqref{portOpt}, the budget dynamically changes based off the return from the previous round and the budget not yet used.
+The new budget is calculated as follows:
+\begin{equation*}
+currBudget = currPercent*(prevRtn + (1-prevPercent))
+\end{equation*}
+The maximization is then calculated again for the current round using the formulation defined in \eqref{portOpt} with the new portfolio of games to wager towards.
+The algorithm calculates the expected return given the risk associated with it for each discretized percent allocation cascading through the 6 rounds.
+The result is formulating the recursive benefit transitioning between stages in the Dynamic Programming problem.
 
+After obtaining an optimal wager between games in a single round (or stage), the algorithm checks if the team that was wagered towards won in that round to obtain the return for a given game.
+In other words, if 20\% of the budget was spent on a team A in an (A,B) match-up the wager would be positive.
+The algorithm them would check if team A won, before getting its return.
+If team B won the match, then a return of zero would result from that game.
+This is verified for all games in a round and summed to get the entire return.
+
+To implement the optimization, the $fmincon$ function in Matlab was used with the $"active-set"$ algorithm.
+The code and setup is found in Appendix A.
+
+\subsection{Sample Inputs, Outputs, and Detailed Solution}
+A sample of the the dynamic programming formulation is shown in Figure \ref{sampleDP}.
+The graph shows the optimal path and returns calculated for each transition from the mean-variance portfolio optimization algorithm.
+The portfolio optimization uses the recursive function defined in \eqref{dp_recursive} to calculated the benefit of transitioning between rounds.
+As previously mentioned, the goal of the Dynamic Programming formulation is to find the optimal path shown in Figure \ref{sampleDP}.
+\begin{figure}[H]
+\centering
+	\includegraphics[scale=.5]{sampleDP.png}%
+	\caption{Sample Path in Dynamic Programming Formulation}
+	\label{sampleDP}
+\end{figure}
+Round 0 is shown in the formulation to signify that the budget before entering into the tournament starting at 100\%.
+It's determined that it is more beneficial to not spend any of the budget in the first round and then traversing through, and eventually spending all of the budget in the sixth round.
 
 \subsection{Sensitivity Analysis}
+\subsubsection{Risk}
 
+\subsubsection{Initial Guess}
 
 \subsection{Inferences on Problem Solutions}
 
 \newpage
 \section{Recommendations \& Conclusions}
-Two Stage Stochastic Optimization
+\subsection{Probability Model}
+
+\subsection{Two Stage Stochastic Optimization}
+
+\subsection{Intelligent Tournament Forecasting}
 
 \newpage
 \section{References}
@@ -209,5 +297,54 @@ end
 opt_list
 \end{verbatim}
 
+\begingroup
+    \fontsize{8pt}{10pt}
+    \spacing{1}
+    \lstset{breaklines=true}
+	\definecolor{mygreen}{rgb}{0,0.6,0}
+	\definecolor{mygray}{rgb}{0.5,0.5,0.5}
+	\definecolor{mymauve}{rgb}{0.58,0,0.82}
+	
+	\lstset{ %
+	  backgroundcolor=\color{white},   % choose the background color; you must add \usepackage{color} or \usepackage{xcolor}
+	  basicstyle=\footnotesize,        % the size of the fonts that are used for the code
+	  breakatwhitespace=false,         % sets if automatic breaks should only happen at whitespace
+	  breaklines=true,                 % sets automatic line breaking
+	  captionpos=b,                    % sets the caption-position to bottom
+	  commentstyle=\color{mygreen},    % comment style
+	  deletekeywords={...},            % if you want to delete keywords from the given language
+	  escapeinside={\%*}{*)},          % if you want to add LaTeX within your code
+	  extendedchars=true,              % lets you use non-ASCII characters; for 8-bits encodings only, does not work with UTF-8
+	  frame=single,                    % adds a frame around the code
+	  keepspaces=true,                 % keeps spaces in text, useful for keeping indentation of code (possibly needs columns=flexible)
+	  keywordstyle=\color{blue},       % keyword style
+	  language=Octave,                 % the language of the code
+	  morekeywords={*,...},            % if you want to add more keywords to the set
+	  numbers=left,                    % where to put the line-numbers; possible values are (none, left, right)
+	  numbersep=5pt,                   % how far the line-numbers are from the code
+	  numberstyle=\tiny\color{mygray}, % the style that is used for the line-numbers
+	  rulecolor=\color{black},         % if not set, the frame-color may be changed on line-breaks within not-black text (e.g. comments (green here))
+	  showspaces=false,                % show spaces everywhere adding particular underscores; it overrides 'showstringspaces'
+	  showstringspaces=false,          % underline spaces within strings only
+	  showtabs=false,                  % show tabs within strings adding particular underscores
+	  stepnumber=2,                    % the step between two line-numbers. If it's 1, each line will be numbered
+	  stringstyle=\color{mymauve},     % string literal style
+	  tabsize=2,                       % sets default tabsize to 2 spaces
+	  title=\lstname                   % show the filename of files included with \lstinputlisting; also try caption instead of title
+}
+\subsection{Mean-Variance Portfolio Optimization}
+\lstinputlisting[language=Matlab]{betOpt_marchmadness.m}
+
+\subsubsection{Mean-Variance Objective Function}
+\lstinputlisting[language=Matlab]{mean_var_func.m}
+
+\subsubsection{Constraints}
+\lstinputlisting[language=Matlab]{absSum.m}
+
+\subsubsection{Verify Winners}
+\lstinputlisting[language=Matlab]{checkwinners.m}
+
+\subsubsection{Dynamic Programming Setup}
+\lstinputlisting[language=Matlab]{DPsetup.m}
 
 \end{document}
