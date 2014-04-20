@@ -1,11 +1,5 @@
 function [y,rtn,R] = mean_var_func(x, theta, RoundMatchups)
     numGames = length(x);
-%     for i = 1:numGames
-%         ri = 1/Prob(i);
-% %         ri = (x(i)/Prob(i))-x(i);
-%         R = [R ri];
-%     end
-
     Prob = [];
     for i=1:numGames
         if x(i) >= 0

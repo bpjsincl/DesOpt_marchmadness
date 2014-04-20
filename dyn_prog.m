@@ -36,6 +36,6 @@ pathCell = num2str(opt_list(:,2))';
 for q=1:length(pathCell)
     revPath(q) = allocationMap(pathCell(q));
 end
-path = fliplr(revPath)
+path = [fliplr(revPath) 1]
 pathRtns = fliplr(opt_list(:,1)')
 totRtn = sum(opt_list(:,1))

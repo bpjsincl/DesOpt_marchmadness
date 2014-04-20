@@ -52,17 +52,9 @@ for k=1:length(dpPercents)
     allRtns = [allRtns; startRtns];
     for l=1:length(Matchups)
         round = l;
-%         prevMaxRtn = budgetRtns(1); %return from previous round at 100%
         for q=1:length(percents)
             RoundMatchups = Matchups{l};
             RoundWinners = Winners{l};
-            % calculate probability of team winning for each game in current round (simple probability)
-            % Prob = [];
-            % for i=1:length(RoundMatchups)
-            %     p = 1 - RoundMatchups{i}(1)/(RoundMatchups{i}(1)+RoundMatchups{i}(2));
-            %     Prob = [Prob p];
-            % end
-            % R = 1./Prob;
 
             % define the budget for a round
             currPercent = percents(q);
@@ -72,21 +64,13 @@ for k=1:length(dpPercents)
             else
                 prevPercent = dpPercents(k);
             end
-%             prevMaxRtn = prevMaxRtn
-            budget = currPercent*(currPercent*prevRtn + (1-prevPercent));%*prevRtn;
-    %         budget = percents(q)*rtn; % here the budget is the same for every round, and normalized to 1
-
+            budget = currPercent*(prevRtn + (1-prevPercent));
             % scales the variance (risk) in the objective function; take more risk as
             % tournament progresses
             theta = 1*length(RoundMatchups); %15 is for when want low risk; 1 for high risk
 
             % set initial conditions (first guess of what the division of budget might be)
             x0_fmin = budget/length(RoundMatchups)*ones(1,length(RoundMatchups)); %initial guess of length of number of games played in current round
-            % A = [eye(length(RoundMatchups),length(RoundMatchups)); -eye(length(RoundMatchups),length(RoundMatchups))];
-            % b = [ones(1,length(RoundMatchups)) ones(1,length(RoundMatchups))];
-            % Aeq = ones(1,length(RoundMatchups));
-            % beq = 1;
-            % LB =zeros(1,length(RoundMatchups)); UB = budget*ones(1,length(RoundMatchups));
 
             A=[];
             b=[];
