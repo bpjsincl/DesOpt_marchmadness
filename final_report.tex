@@ -254,8 +254,22 @@ It's determined that it is more beneficial to not spend any of the budget in the
 
 \subsection{Sensitivity Analysis}
 \subsubsection{Risk}
+As previously mentioned, the risk is weighted by a factor of $\theta$ in \eqref{portOpt}.
+Because the calculated probability follows a simple model that is not really representative of the actual probability of a team winning, the risk calculation from variance is also not representative of real risk associated with the bet made. 
+With varying risk weight $\theta$, the optimal asset allocation should change. 
+It was determined that early on in the tournament, a change in risk seems to have an expected change in outcome of wager allocation.
+For example, telling the algorithm to weight risk low (take a lot of risk) in a game where a team ranked 1 is playing a team ranked 16, the algorithm often places a wager on team 16 -- as expected.
+However, as the tournament progresses, the bettor is unable to weight risk low enough for the algorithm to gamble on the team with a lower probability.
+This is because there are less teams and therefore less variance.
+
+One way to overcome this is to follow the idea of taking less risk early on in the tournament and more as it progresses.
+This is done by multiplying $\theta$ by the number of teams in a round -- so that early on risk matters more than later in the tournament because $\theta$ is a greater value in round 1.
+After many values of $\theta$ where attempted it was determined that a value of "1" resulted in the best outcome.
 
 \subsubsection{Initial Guess}
+Another sensitive component to using the $"acive-set"$ algorithm in $fmincon$ was the initial guess -- especially for rounds where there are not many games (ie. Round 6 only has one game).
+The algorithm tends to find a local maximum biased towards the initial guess.
+In other words, if the initial guess was positive (a bet would be placed on team A in an (A,B) match-up), then the algorithm would also find a positive solution -- no matter how much risk is varied as previously discussed).
 
 \subsection{Inferences on Problem Solutions}
 
