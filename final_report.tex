@@ -53,19 +53,13 @@ The formulation of each optimization algorithm is provided, as well as the resul
 Discussions on the results, sensitivity of the system, and conclusions are also provided. 
 
 \subsection{Problem Definition}
-
-
-\newpage
-\section{Optimization Algorithms}
-\subsection{Modern Portfolio Optimization}
-\subsubsection{Approach Background}
-As previously mentioned the goal of the project is to maximize the return on investment when betting on individual games in the yearly NCAA March Madness Tournament.
+As previously mentioned, the goal of the project is to maximize the return on investment when betting on individual games in the yearly NCAA March Madness Tournament.
 It was recognized early on that gambling in sports follows a similar behaviour to that of portfolio optimization between two assets. 
-Any one game can be thought of as a portfolio where each asset is team A, or team B in the match-up.
+Any one game can be thought of as a portfolio where each asset is either team A or team B in the match-up.
 The objective of any one game (as a portfolio) is to maximize return on investment when given a budget to spend on that game.
-For the purposes of the tournament, instead of the portfolio being an individual game, it becomes an individual round (ie. Portfolio's 1 through 6 are Rounds 1 through 6).
+For the purposes of the tournament, instead of the portfolio being an individual game, it becomes an individual round (i.e. Portfolios 1 through 6 are Rounds 1 through 6).
 The portfolio then changes from being constructed of assets as teams, to assets as each game.
-In other words, one game is one asset in the portfolio (Round).
+In other words, one game is one asset in the portfolio (a round).
 This outlook would follow a myopic outlook on Portfolio Theory for each round.
 In the first round there is then 32 assets to purchase, 16 in the second, 8 in the third, and so on.
 
@@ -75,9 +69,11 @@ If it is negative, then the bettor is placing a wager on team B.
 The myopic optimization problem is to maximize the return on investment in any one round by maximizing budget allocation across all assets. 
 The following section will aim to describe a novel application of expanding on the myopic approach into a dynamic portfolio optimization problem where the budget for the following round is the return on investment from the previous round.
 
-
-\subsubsection{Setup}
-Much of the general setup and background was already described. 
+\newpage
+\section{Optimization Algorithms}
+\subsection{Modern Portfolio Optimization}
+\subsubsection{Formulation}
+Now that much of the general setup and background have been described, we may move forward to formulate the details of the problem to begin carrying out the solution.
 As previously mentioned the objective is to use modern portfolio theory techniques to determine a maximum return on investment for an individual round basis.
 This is done using a mean-variance optimization approach described below.
 
@@ -100,7 +96,7 @@ where,
     $R:$        & Vector of expected returns        \\ 
     $b:$        & Budget for any one round       	\\ 
     $m:$        & Total Number of games(assets)    	\\ 
-    $\theta$	& Risk weighting					\\
+    $\theta:$	& Risk weighting					\\
     \end{tabular}
     \label{mop_vars}
     \caption{Variables used in the Mean-Variance Portfolio Optimization.}
@@ -113,7 +109,7 @@ A high value will do the opposite and will make more conservative wagers between
 
 \subsubsection*{Stochastic Variables}
 The objective is to maximize return while minimizing risk in the mean-variance approach, where return is the expected return based off of the stochastic return, and the risk is the variance.
-Calculations for each is shown below:
+Calculations for each are shown below:
 
 \begin{equation}
 \mu = E(R^Tx)=\sum r_i x_i
@@ -148,8 +144,9 @@ RPI is a metric calculated from the weighted sum of three statistics: winning pe
 This is the current standard for ranking teams 1 through 16 for each region (four regions: East, West, South, MidWest), creating the 64 teams that make-up the tournament.
 
 \subsubsection{Assumptions}
-One important assumption previously mentioned is that the rankings give a realistic probability of outcome.
-However, this is very basic and more advanced statistical models would provide more accurate expected returns from any match-up.
+One important assumption is that the rankings give a realistic probability of outcome.
+However, the probabilities used here are very basic, and more advanced statistical models would provide more accurate expected returns from any match-up.
+The probabilities used are simply to illustrate the process of achieving a solution, which will improve given a more advanced statistical model.
 Improvements to statistical modelling are described in conclusions and recommendations.
 
 Additionally, in order to calculate the expected return the assumption of uniformity in distribution must be made for the stochastic variables.
@@ -161,7 +158,7 @@ The betting possibilities are discretized into 5 states, wherein one may utilize
 Using the discrete dynamic programming methodology outlined in class, the problem was divided into stages, with each stage representing a round of the tournament.
 This method depends on Bellman's principle of optimality, stated as follows:
 \begin{quote}
-\emph{``The optimal set of decisions in a multistage process has the property that whatever the initial stage, state and decisions are, the remaining decisions, given the current stage, must form a set of optimal decisions for the remaining problem.''}
+\emph{``The optimal set of decisions in a multistage process has the property that whatever the initial stage, state and decisions are, the remaining decisions, given the current stage, must form a set of optimal decisions for the remaining problem.''}\cite{rust1992people}
 \end{quote}
 This gives rise to the recursive nature of the problem formulation.
 A breakdown of the variables used in the analysis, and their meaning, is provided in Table \ref{dp_vars}. \\
@@ -186,7 +183,7 @@ A decision (the value of $x_{t}$) is required at each stage, where $t$ is the st
 Each stage has a state variable, $s_{t}$, and this state is divided into five states, one for each allowed percentage of the total budget to be bet.
 At each stage (i.e. each round in the tournament), the dynamic programming system moves from the current state in the current stage to another ideal feasible state in the next stage.
 This discrete dynamic programming methodology is able to solve each stage problem individually by considering the return function for the current stage, and the optimal function, $f^{*}$, from the next stage ($t + 1$) to the end of the horizon (6 rounds).
-In order to accomplish this, a recursive equation was constructed, as shown in Equation \ref{dp_recursive}.
+In order to accomplish this, a recursive equation was constructed, as shown in Equation \ref{dp_recursive}.\cite{bellman1956dynamic}
 
 \begin{equation}
 f_{t}(s_{t}(i)) = \max \ [r_{t}(x_{t},s_{t}(i)) + f^{*}_{t+1}(s_{t+1}(j))]
@@ -212,15 +209,16 @@ In order to calculate expected return, match-ups for all rounds of the tournamen
 For the purposes of this project, match-ups from a past tournament was used to have knowledge of these match-ups, however this would not be realistic.
 However this does allow for accurate knowledge of probabilities of every match-up in all rounds of the tournament and is necessary for implementing dynamic programming.
 
-This could be overcome by using an intelligent system to predict probabilities of future match-ups and dynamically change algorithm as tournament progresses. 
-For example, if round 1 of the tournament is complete and teams in round 2 were not predicted correctly then would need to dynamically change betting towards teams in current round (round 2).
+This could be overcome by using an intelligent system to predict probabilities of future match-ups and to dynamically change the algorithm as the tournament progresses. 
+For example, if round 1 of the tournament is complete and teams in round 2 were not predicted correctly, then betting would need to dynamically change towards teams in the current round (round 2).
 The machine learning algorithm would then adopt a new prediction for rounds 3 through 6 and the entire betting path would change.
-One solution to an intelligent system would be to implement an artificial neural network to use backpropagation techniques from past data to predict the outcome of a tournament. 
+One solution to an intelligent system would be to implement an artificial neural network to use back-propagation techniques from past data to predict the outcome of a tournament.
 The team is working on this out of interest but it is not discussed further in this report.
 
+\newpage
 \section{Results and Analysis}
 \subsection{Modern Portfolio Optimization}
-With a starting budget of "1" in \eqref{portOpt}, the budget dynamically changes based off the return from the previous round and the budget not yet used.
+With a starting budget of ``1'' in \eqref{portOpt}, the budget dynamically changes based off the return from the previous round and the budget not yet used.
 The new budget is calculated as follows:
 \begin{equation*}
 currBudget = currPercent*(prevRtn + (1-prevPercent))
@@ -231,16 +229,16 @@ The result is formulating the recursive benefit transitioning between stages in 
 
 After obtaining an optimal wager between games in a single round (or stage), the algorithm checks if the team that was wagered towards won in that round to obtain the return for a given game.
 In other words, if 20\% of the budget was spent on a team A in an (A,B) match-up the wager would be positive.
-The algorithm them would check if team A won, before getting its return.
+The algorithm would then check if team A won, before getting its return.
 If team B won the match, then a return of zero would result from that game.
 This is verified for all games in a round and summed to get the entire return.
 
-To implement the optimization, the $fmincon$ function in Matlab was used with the $"active-set"$ algorithm.
+To implement the optimization, the $fmincon$ function in Matlab was used with the ``$active-set$'' algorithm.
 The code and setup is found in Appendix A.
 
 \subsection{Sample Inputs, Outputs, and Detailed Solution}
 A sample of the the dynamic programming formulation is shown in Figure \ref{sampleDP}.
-The graph shows the optimal path and returns calculated for each transition from the mean-variance portfolio optimization algorithm.
+The graph shows the optimal path and return values, calculated for each transition from the mean-variance portfolio optimization algorithm.
 The portfolio optimization uses the recursive function defined in \eqref{dp_recursive} to calculated the benefit of transitioning between rounds.
 As previously mentioned, the goal of the Dynamic Programming formulation is to find the optimal path shown in Figure \ref{sampleDP}.
 \begin{figure}[H]
@@ -264,20 +262,50 @@ This is because there are less teams and therefore less variance.
 
 One way to overcome this is to follow the idea of taking less risk early on in the tournament and more as it progresses.
 This is done by multiplying $\theta$ by the number of teams in a round -- so that early on risk matters more than later in the tournament because $\theta$ is a greater value in round 1.
-After many values of $\theta$ where attempted it was determined that a value of "1" resulted in the best outcome.
+After many values of $\theta$ where attempted it was determined that a value of ``1'' resulted in the best outcome.
 
 \subsubsection{Initial Guess}
-Another sensitive component to using the $"acive-set"$ algorithm in $fmincon$ was the initial guess -- especially for rounds where there are not many games (ie. Round 6 only has one game).
+Another sensitive component to using the ``$active-set$'' algorithm in $fmincon$ was the initial guess -- especially for rounds where there are not many games (i.e. Round 6 only has one game).
 The algorithm tends to find a local maximum biased towards the initial guess.
 In other words, if the initial guess was positive (a bet would be placed on team A in an (A,B) match-up), then the algorithm would also find a positive solution -- no matter how much risk is varied as previously discussed).
 
 \subsection{Inferences on Problem Solutions}
+Given the results as shown, it is evident that a recommendation may be made towards the allocation of a budget on the games in the NCAA March Madness tournament.
+As a two-part solution, involving mean-variance portfolio optimization and dynamic programming, the results provided can be used as a conclusive measure of which games in the tournament should be bet on, and which percentage of the budget should be allocated to those games, to maximize return.
+
+The solution to the first stage of the problem - the portfolio optimization stage - works to determine the expected return from each game.
+Here, a relatively rudimentary measure of the probability of victory for a given team is shown, taking into account the ranking of each team as determined through a number of factors by the NCAA league.
+While utilizing this information to formulate the probabilistic model and solution works well to illustrate the devised technique, there is room for improvement in providing more detailed, holistic probability metrics to input to the portfolio optimization scheme.
+Given the extremely variable nature of a game, a truly accurate prediction of the outcome is nearly impossible.
+However, the use of various statistics that may influence an outcome can be included in the problem formulation to ultimately provide a more accurate solution.
+The technique of portfolio optimization is proven to work well in many other areas, such as stock portfolios, and thus can be easily abstracted to the scenario of a tournament bracket with multiple statically-influenced inputs.
+
+With an output of total budget (or change in budget, or return - depending on how the problem is framed), further optimization is done throughout the entire tournament using dynamic programming.
+Discretizing the bet amounts as a percentage of total budget provides a clear method of traversing through the tournament, while emulating the real-life scenario where bets must be placed in certain increments with a specified minimum bet amount.
+By using the optimal returns at each bet amount and stage in the tournament, dynamic programming achieves an optimal solution for bet allocation.
+As is the case in the portfolio optimization stage, the solution achieved here is only as good as the original predictors/stochastic model used as input to the problem.
+
+The combination portfolio optimization and dynamic programming methodology is shown to work well in achieving an optimal solution given probabilistic inputs on the outcome of games in the NCAA March Madness tournament.
+However, further attention should be paid to the inputs of the method in achieving the most realistic and accurate solutions.
 
 \newpage
 \section{Recommendations \& Conclusions}
 \subsection{Probability Model}
+As previously discussed, the validity of the solution given by this method is heavily influenced by the accuracy of the probability model used as input for the system.
+This is the crux of predicting outcomes of sporting events - that so many statistics can be gathered and compiled into a predictive model of the game, yet so much of the outcome still relies on unpredictable chance.
+A close approximation is as far as one may get, and through the use of the two-part portfolio optimization and dynamic programming methodology outlined here, a good prediction and recommendation can be made.
+It is recommended that further research be carried out in the area of formulating a holistic probability model, for use in this optimization methodology.
+Overall, a more accurate probability model means a better, more trustworthy solution.
 
 \subsection{Two Stage Stochastic Optimization}
+A second recommended area for further work is in expanding the problem formulation into a two-stage stochastic optimization method.
+This would involve taking budget-related shortfalls and surpluses into account at each stage, to closer represent the actual results of each round.
+This also allows the solution to dynamically update itself based on results as they happen, pinning predictions and actual results against one another and handling the differences between them.
+This is likely to provide a more holistic model of the tournament and outcomes overall.
+
+A tradeoff of this method however, is the increased complexity of the problem and solution.
+As shortfall and surplus variables are taken into consideration, the formulation of the problem - and thus the compute necessary to generate a solution - is increased \cite{robinson1987stability}.
+Achieving an agreeable balance between computational need and validity and accuracy of the solution will be an important consideration when pursuing this optimization method.
 
 \subsection{Intelligent Tournament Forecasting}
 
