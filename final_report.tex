@@ -303,11 +303,19 @@ This would involve taking budget-related shortfalls and surpluses into account a
 This also allows the solution to dynamically update itself based on results as they happen, pinning predictions and actual results against one another and handling the differences between them.
 This is likely to provide a more holistic model of the tournament and outcomes overall.
 
-A tradeoff of this method however, is the increased complexity of the problem and solution.
+A trade-off of this method however, is the increased complexity of the problem and solution.
 As shortfall and surplus variables are taken into consideration, the formulation of the problem - and thus the compute necessary to generate a solution - is increased \cite{robinson1987stability}.
 Achieving an agreeable balance between computational need and validity and accuracy of the solution will be an important consideration when pursuing this optimization method.
 
 \subsection{Intelligent Tournament Forecasting}
+To be able to implement the Dynamic Programming algorithm successfully for future tournaments, it becomes necessary to predict the outcome of future games.
+Or more necessary, to predict the probability of any team winning in a future match-up.
+In the current model, all probabilities are known because the methods where tested on a past tournament.
+However, these probabilities could easily be attained through various Machine Learning techniques including: neural nets \cite{KarlLeswing}, varying regression and probabilistic optimization techniques \cite{adams-dahl-murray-2010a, DannyTarlow, BradyWest, BradleyCarlin, ProbModelsNCAA-1991, MoreProbModelsNCAA-1996}, support vector machines \cite{KennethDeakins}, and genetic algorithms \cite{ScottTurner}.
+
+Using one of these techniques, more accurate probabilities would be calculated and updated as the tournament progresses.
+The updating of the probabilities would then change allow for a recalculation of the optimal path from the Dynamic Programming formulation since the expected returns would be changing.
+Out of interest, the implementation of a neural network is being explored, but is beyond the scope of this project.
 
 \newpage
 \section{References}
